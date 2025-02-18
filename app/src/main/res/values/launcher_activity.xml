@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="select_image_content_description">Select image icon</string>
+  <string name="select_text">Select image</string>
+  <string name="output_content_description">Foreground image result</string>
+  <string name="save">Save foreground image</string>
+  <string name="background_remover_failed_toast">Failed remove background. Try again?\n%1$s</string>
+  <string name="save_toast_failed">Failed to save foreground image</string>
+  <string name="save_toast_success_failed_to_get_path">Saved foreground image</string>
+  <string name="save_toast_success">Saved to %1$s</string>
+
+  <color name="save_text">#FFFFFF</color>
+</resources>
