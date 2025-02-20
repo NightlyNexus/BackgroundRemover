@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -33,7 +34,6 @@
         android:layout_marginBottom="24dp"
         android:text="@string/select_text"
         android:textSize="28sp" />
-
   </LinearLayout>
 
   <FrameLayout
@@ -56,20 +56,83 @@
         android:background="@drawable/save_all_bar_shadow" />
   </FrameLayout>
 
-  <FrameLayout
+  <LinearLayout
       android:id="@+id/save_all_container"
       android:layout_width="match_parent"
-      android:layout_height="wrap_content">
+      android:layout_height="wrap_content"
+      android:baselineAligned="false"
+      android:orientation="horizontal">
 
-    <Button
-        android:id="@+id/save_all"
-        android:layout_width="wrap_content"
+    <FrameLayout
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginHorizontal="48dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="48dp"
-        android:text="@string/save_all"
-        android:textColor="@color/save_all_text" />
-  </FrameLayout>
+        android:layout_weight="1">
+
+      <LinearLayout
+          android:id="@+id/reselect_container"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_gravity="end"
+          android:layout_marginVertical="8dp"
+          android:background="?selectableItemBackground"
+          android:gravity="center_horizontal"
+          android:orientation="vertical"
+          tools:ignore="UselessParent">
+        <!-- We need the nesting for alignment. -->
+
+        <ImageView
+            android:id="@+id/reselect_image"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp"
+            android:contentDescription="@string/reselect_image_content_description"
+            android:src="@drawable/select" />
+
+        <TextView
+            android:id="@+id/reselect_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginBottom="16dp"
+            android:text="@string/reselect_text"
+            android:textSize="16sp" />
+      </LinearLayout>
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1">
+
+      <LinearLayout
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginVertical="24dp"
+          android:gravity="center_horizontal"
+          android:orientation="vertical"
+          tools:ignore="UselessParent">
+        <!-- We need the nesting for alignment. -->
+
+        <Button
+            android:id="@+id/save_all"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:text="@string/save_all"
+            android:textColor="@color/save_all_text" />
+
+        <!-- This TextView is only to align the Save all button horizontally. -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginBottom="16dp"
+            android:text="@string/reselect_text"
+            android:textSize="16sp"
+            android:visibility="invisible" />
+      </LinearLayout>
+    </FrameLayout>
+  </LinearLayout>
 </LinearLayout>

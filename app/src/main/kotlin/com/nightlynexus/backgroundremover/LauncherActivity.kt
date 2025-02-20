@@ -19,8 +19,6 @@ class LauncherActivity : AppCompatActivity() {
   private lateinit var backgroundRemover: BackgroundRemover
   private lateinit var rootView: View
   private lateinit var selectContainer: View
-  private lateinit var selectImageView: View
-  private lateinit var selectTextView: View
   private lateinit var outputViewController: OutputViewController
   private lateinit var pickMedia: ActivityResultLauncher<Intent>
 
@@ -33,12 +31,11 @@ class LauncherActivity : AppCompatActivity() {
     setContentView(R.layout.launcher_activity)
     rootView = findViewById(R.id.root)
     selectContainer = rootView.findViewById(R.id.select_container)
-    selectImageView = selectContainer.findViewById(R.id.select_image)
-    selectTextView = selectContainer.findViewById(R.id.select_text)
     val outputListContainer = rootView.findViewById<View>(R.id.output_list_container)
     val outputListView = outputListContainer.findViewById<RecyclerView>(R.id.output_list)
     val saveAllContainer = rootView.findViewById<View>(R.id.save_all_container)
     val saveAllButton = saveAllContainer.findViewById<View>(R.id.save_all)
+    val reselectContainer = rootView.findViewById<View>(R.id.reselect_container)
     outputViewController = OutputViewController(
       outputListContainer,
       outputListView,
@@ -66,12 +63,14 @@ class LauncherActivity : AppCompatActivity() {
       outputViewController.setVisible(true)
     }
 
-    selectContainer.setOnClickListener {
+    val selectOnClickListener = View.OnClickListener {
       pickMedia.launch(Intent(ACTION_PICK, EXTERNAL_CONTENT_URI).apply {
         type = "image/*"
         putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
       })
     }
+    selectContainer.setOnClickListener(selectOnClickListener)
+    reselectContainer.setOnClickListener(selectOnClickListener)
 
     selectContainer.visibility = View.VISIBLE
     outputViewController.setVisible(false)
