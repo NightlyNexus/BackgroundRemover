@@ -2,7 +2,7 @@
 <resources>
   <string name="output_item_image_content_description">Foreground image result for file %1$s</string>
   <string name="output_item_message_saved_to_disk">Saved to %1$s</string>
-  <string name="output_item_message_saved_to_disk_failed_to_get_path">Saved to disk</string>
+  <string name="output_item_message_saved_to_disk_failed_to_get_path">%1$s saved to disk</string>
   <string name="output_item_message_extracted_foreground">%1$s</string>
   <string name="output_item_message_failed_to_extract_foreground">Failed to extract foreground</string>
   <string name="output_item_toast_failed_to_save_to_disk">Failed to save %1$s to disk. Try again?</string>

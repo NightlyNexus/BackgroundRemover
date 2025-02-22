@@ -19,10 +19,15 @@ import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import java.util.concurrent.Executor
 
 internal class OutputViewController(
-  private val outputListContainer: View,
-  outputListView: RecyclerView,
-  private val saveAllContainer: View,
-  private val saveAllButton: View,
+  private val outputContainer: ScrimFrameLayout,
+  private val outputListView: RecyclerView,
+  private val outputSingleContainerView: View,
+  outputSingleLoading: View,
+  outputSingleImage: ImageView,
+  outputSingleMessage: TextView,
+  outputSingleSaveLoading: View,
+  saveAllContainer: View,
+  private val saveAllButton: TextView,
   private val imageExecutor: Executor,
   private val backgroundRemover: BackgroundRemover
 ) {
@@ -32,12 +37,38 @@ internal class OutputViewController(
   private var backgroundRemoverCallback: BackgroundRemoverCallback? = null
   private var imageResultsInDisableSaveAllStateCount = 0
   private val adapter = Adapter()
+  private val outputSingleItemViewController = OutputItemViewController(
+    outputSingleLoading,
+    outputSingleImage,
+    outputSingleMessage,
+    saveButton = null,
+    outputSingleSaveLoading
+  )
 
   init {
     // TODO: API?
-    outputListContainer.setOnApplyWindowInsetsListener { v, insets ->
+    val outputListViewPaddingTop = outputListView.paddingTop
+    val outputListViewPaddingBottom = outputListView.paddingBottom
+    outputListView.setOnApplyWindowInsetsListener { v, insets ->
       val systemBars = insets.getInsets(WindowInsets.Type.systemBars())
-      v.setPadding(systemBars.left, 0, systemBars.right, 0)
+      v.setPadding(
+        0,
+        outputListViewPaddingTop + systemBars.top,
+        0,
+        outputListViewPaddingBottom
+      )
+      insets
+    }
+    val outputSingleContainerViewPaddingTop = outputSingleContainerView.paddingTop
+    val outputSingleContainerViewPaddingBottom = outputSingleContainerView.paddingBottom
+    outputSingleContainerView.setOnApplyWindowInsetsListener { v, insets ->
+      val systemBars = insets.getInsets(WindowInsets.Type.systemBars())
+      v.setPadding(
+        0,
+        outputSingleContainerViewPaddingTop + systemBars.top,
+        0,
+        outputSingleContainerViewPaddingBottom
+      )
       insets
     }
     saveAllContainer.setOnApplyWindowInsetsListener { v, insets ->
@@ -56,7 +87,7 @@ internal class OutputViewController(
     saveAllButton.isEnabled = false
     saveAllButton.setOnClickListener {
       for (i in imageResults.indices) {
-        when (val imageResult = imageResults[i]) {
+        when (val oldImageResult = imageResults[i]) {
           is ImageResult.SavedToDisk -> {
             // Do nothing.
           }
@@ -66,18 +97,23 @@ internal class OutputViewController(
           }
 
           is ImageResult.ExtractedForeground -> {
-            val uri = imageResult.uri
-            val fileName = imageResult.fileName
-            val foreground = imageResult.foreground
+            val uri = oldImageResult.uri
+            val fileName = oldImageResult.fileName
+            val foreground = oldImageResult.foreground
             val saveBitmapAsPngRunnable = SaveBitmapAsPngRunnable(uri, fileName, foreground)
-            imageResults[i] = ImageResult.LoadingSaveToDisk(
+            val newImageResult = ImageResult.LoadingSaveToDisk(
               uri,
               fileName,
               foreground,
               saveBitmapAsPngRunnable
             )
+            imageResults[i] = newImageResult
             incrementImageResultsInDisableSaveAllStateCount()
-            adapter.notifyItemChanged(i)
+            if (imageResults.size == 1) {
+              outputSingleItemViewController.setImageResult(newImageResult)
+            } else {
+              adapter.notifyItemChanged(i)
+            }
             imageExecutor.execute(saveBitmapAsPngRunnable)
           }
 
@@ -107,26 +143,35 @@ internal class OutputViewController(
     }
     val oldSize = imageResults.size
     imageResults.clear()
+
     adapter.notifyItemRangeRemoved(0, oldSize)
+    outputSingleItemViewController.clear()
 
     val size = uris.size
+    if (size == 1) {
+      outputContainer.showScrim(false)
+      outputListView.visibility = View.GONE
+      outputSingleContainerView.visibility = View.VISIBLE
+      saveAllButton.setText(R.string.save_all_single)
+    } else {
+      outputContainer.showScrim(true)
+      outputListView.visibility = View.VISIBLE
+      outputSingleContainerView.visibility = View.GONE
+      saveAllButton.setText(R.string.save_all_multiple)
+    }
+
     val callback = BackgroundRemoverCallback()
     this.backgroundRemoverCallback = callback
-    for (i in 0 until size) {
+    for (i in uris.indices) {
       val imageUri = uris[i]
-      imageResults += ImageResult.LoadingForeground(imageUri)
-      adapter.notifyItemInserted(i)
+      val imageResult = ImageResult.LoadingForeground(imageUri)
+      imageResults += imageResult
+      if (size == 1) {
+        outputSingleItemViewController.setImageResult(imageResult)
+      } else {
+        adapter.notifyItemInserted(i)
+      }
       backgroundRemover.removeBackground(context, imageUri, callback)
-    }
-  }
-
-  fun setVisible(visible: Boolean) {
-    if (visible) {
-      outputListContainer.visibility = View.VISIBLE
-      saveAllContainer.visibility = View.VISIBLE
-    } else {
-      outputListContainer.visibility = View.GONE
-      saveAllContainer.visibility = View.GONE
     }
   }
 
@@ -168,12 +213,13 @@ internal class OutputViewController(
         return
       }
       val existingIndex = findIndex(imageUri)
-      imageResults[existingIndex] = ImageResult.ExtractedForeground(
-        imageUri,
-        fileName,
-        foreground
-      )
-      adapter.notifyItemChanged(existingIndex)
+      val imageResult = ImageResult.ExtractedForeground(imageUri, fileName, foreground)
+      imageResults[existingIndex] = imageResult
+      if (imageResults.size == 1) {
+        outputSingleItemViewController.setImageResult(imageResult)
+      } else {
+        adapter.notifyItemChanged(existingIndex)
+      }
       incrementExtractedForegroundOrFailureCount()
     }
 
@@ -182,8 +228,13 @@ internal class OutputViewController(
         return
       }
       val existingIndex = findIndex(imageUri)
-      imageResults[existingIndex] = ImageResult.FailedToExtractForeground(imageUri)
-      adapter.notifyItemChanged(existingIndex)
+      val imageResult = ImageResult.FailedToExtractForeground(imageUri)
+      imageResults[existingIndex] = imageResult
+      if (imageResults.size == 1) {
+        outputSingleItemViewController.setImageResult(imageResult)
+      } else {
+        adapter.notifyItemChanged(existingIndex)
+      }
       incrementExtractedForegroundOrFailureCount()
       incrementImageResultsInDisableSaveAllStateCount()
     }
@@ -197,7 +248,7 @@ internal class OutputViewController(
     }
   }
 
-  private inner class SaveBitmapAsPngRunnable(
+  inner class SaveBitmapAsPngRunnable(
     private val uri: Uri,
     private val fileName: String,
     private val foreground: Bitmap
@@ -213,29 +264,32 @@ internal class OutputViewController(
         val existingIndex = findIndex(uri)
         when (result) {
           is SaveBitmapResult.Success -> {
-            imageResults[existingIndex] = ImageResult.SavedToDisk(
-              uri,
-              fileName,
-              foreground,
-              result.filePath
-            )
+            val resultingPath = result.filePath
+            val imageResult = ImageResult.SavedToDisk(uri, fileName, foreground, resultingPath)
+            imageResults[existingIndex] = imageResult
+            if (imageResults.size == 1) {
+              outputSingleItemViewController.setImageResult(imageResult)
+            } else {
+              adapter.notifyItemChanged(existingIndex)
+            }
           }
 
           SaveBitmapResult.Failure -> {
-            imageResults[existingIndex] = ImageResult.ExtractedForeground(
-              uri,
-              fileName,
-              foreground
-            )
+            val imageResult = ImageResult.ExtractedForeground(uri, fileName, foreground)
+            imageResults[existingIndex] = imageResult
             decrementImageResultsInDisableSaveAllStateCount()
             Toast.makeText(
               context,
               context.getString(R.string.output_item_toast_failed_to_save_to_disk, fileName),
               Toast.LENGTH_LONG
             ).show()
+            if (imageResults.size == 1) {
+              outputSingleItemViewController.setImageResult(imageResult)
+            } else {
+              adapter.notifyItemChanged(existingIndex)
+            }
           }
         }
-        adapter.notifyItemChanged(existingIndex)
       }
     }
   }
@@ -249,118 +303,51 @@ internal class OutputViewController(
       toX: Int,
       toY: Int
     ): Boolean {
-      if (oldHolder == newHolder) {
-        dispatchChangeFinished(oldHolder, true)
+      oldHolder as Adapter.ViewHolder
+      newHolder as Adapter.ViewHolder
+      val oldController = oldHolder.outputItemViewController
+      val newController = newHolder.outputItemViewController
+      return if (oldController.needsChangeAnimation(newController)) {
+        super.animateChange(oldHolder, newHolder, fromX, fromY, toX, toY)
       } else {
-        dispatchChangeFinished(oldHolder, true)
-        dispatchChangeFinished(newHolder, false)
+        if (oldHolder == newHolder) {
+          dispatchChangeFinished(oldHolder, false)
+        } else {
+          dispatchChangeFinished(oldHolder, true)
+          dispatchChangeFinished(newHolder, false)
+        }
+        false
       }
-      return false
     }
   }
 
   private inner class Adapter : RecyclerView.Adapter<Adapter.ViewHolder>() {
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-      val loadingView = itemView.findViewById<View>(R.id.loading)!!
-      val imageView = itemView.findViewById<ImageView>(R.id.image)!!.apply {
-        background = CheckerboardDrawable(
-          context.getColor(R.color.output_item_image_background_light),
-          context.getColor(R.color.output_item_image_background_dark),
-          resources.getDimension(R.dimen.output_item_image_background_side_length)
-        )
-      }
-      val messageView = itemView.findViewById<TextView>(R.id.message)!!
-      val saveButton = itemView.findViewById<View>(R.id.save)!!.apply {
-        setOnClickListener {
-          val index = adapterPosition
-          val success = imageResults[index] as ImageResult.ExtractedForeground
-          val uri = success.uri
-          val fileName = success.fileName
-          val foreground = success.foreground
-          val saveBitmapAsPngRunnable = SaveBitmapAsPngRunnable(uri, fileName, foreground)
-          imageResults[index] = ImageResult.LoadingSaveToDisk(
-            uri,
-            fileName,
-            foreground,
-            saveBitmapAsPngRunnable
-          )
-          incrementImageResultsInDisableSaveAllStateCount()
-          adapter.notifyItemChanged(index)
-          imageExecutor.execute(saveBitmapAsPngRunnable)
-        }
-      }
-      val saveLoadingView = itemView.findViewById<View>(R.id.save_loading)!!
-
-      fun setImageResult(imageResult: ImageResult) {
-        when (imageResult) {
-          is ImageResult.SavedToDisk -> {
-            imageView.setImageBitmap(imageResult.foreground)
-            imageView.contentDescription = context.getString(
-              R.string.output_item_image_content_description,
-              imageResult.fileName
+      val outputItemViewController = run {
+        val loadingView = itemView.findViewById<View>(R.id.loading)!!
+        val imageView = itemView.findViewById<ImageView>(R.id.image)!!
+        val messageView = itemView.findViewById<TextView>(R.id.message)!!
+        val saveButton = itemView.findViewById<View>(R.id.save)!!.apply {
+          setOnClickListener {
+            val index = adapterPosition
+            val success = imageResults[index] as ImageResult.ExtractedForeground
+            val uri = success.uri
+            val fileName = success.fileName
+            val foreground = success.foreground
+            val saveBitmapAsPngRunnable = SaveBitmapAsPngRunnable(uri, fileName, foreground)
+            imageResults[index] = ImageResult.LoadingSaveToDisk(
+              uri,
+              fileName,
+              foreground,
+              saveBitmapAsPngRunnable
             )
-            val resultingPath = imageResult.resultingPath
-            if (resultingPath == null) {
-              messageView.setText(R.string.output_item_message_saved_to_disk_failed_to_get_path)
-            } else {
-              messageView.text = context.getString(
-                R.string.output_item_message_saved_to_disk,
-                resultingPath
-              )
-            }
-            loadingView.visibility = View.GONE
-            imageView.visibility = View.VISIBLE
-            messageView.visibility = View.VISIBLE
-            saveButton.visibility = View.INVISIBLE
-            saveLoadingView.visibility = View.GONE
-          }
-
-          is ImageResult.LoadingSaveToDisk -> {
-            imageView.setImageBitmap(imageResult.foreground)
-            loadingView.visibility = View.GONE
-            imageView.visibility = View.VISIBLE
-            messageView.visibility = View.INVISIBLE
-            saveButton.visibility = View.INVISIBLE
-            saveLoadingView.visibility = View.VISIBLE
-          }
-
-          is ImageResult.ExtractedForeground -> {
-            imageView.setImageBitmap(imageResult.foreground)
-            imageView.contentDescription = context.getString(
-              R.string.output_item_image_content_description,
-              imageResult.fileName
-            )
-            messageView.text = context.getString(
-              R.string.output_item_message_extracted_foreground,
-              imageResult.fileName
-            )
-            loadingView.visibility = View.GONE
-            imageView.visibility = View.VISIBLE
-            messageView.visibility = View.VISIBLE
-            saveButton.visibility = View.VISIBLE
-            saveLoadingView.visibility = View.GONE
-          }
-
-          is ImageResult.FailedToExtractForeground -> {
-            // TODO: Set an error view.
-            // TODO: We could have a retry button.
-            imageView.setImageDrawable(null)
-            messageView.setText(R.string.output_item_message_failed_to_extract_foreground)
-            loadingView.visibility = View.GONE
-            imageView.visibility = View.VISIBLE
-            messageView.visibility = View.VISIBLE
-            saveButton.visibility = View.INVISIBLE
-            saveLoadingView.visibility = View.GONE
-          }
-
-          is ImageResult.LoadingForeground -> {
-            loadingView.visibility = View.VISIBLE
-            imageView.visibility = View.GONE
-            messageView.visibility = View.INVISIBLE
-            saveButton.visibility = View.INVISIBLE
-            saveLoadingView.visibility = View.GONE
+            incrementImageResultsInDisableSaveAllStateCount()
+            adapter.notifyItemChanged(index)
+            imageExecutor.execute(saveBitmapAsPngRunnable)
           }
         }
+        val saveLoadingView = itemView.findViewById<View>(R.id.save_loading)!!
+        OutputItemViewController(loadingView, imageView, messageView, saveButton, saveLoadingView)
       }
     }
 
@@ -376,11 +363,11 @@ internal class OutputViewController(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
       val imageResult = imageResults[position]
-      holder.setImageResult(imageResult)
+      holder.outputItemViewController.setImageResult(imageResult)
     }
   }
 
-  private sealed interface ImageResult {
+  sealed interface ImageResult {
     val uri: Uri
 
     class SavedToDisk(

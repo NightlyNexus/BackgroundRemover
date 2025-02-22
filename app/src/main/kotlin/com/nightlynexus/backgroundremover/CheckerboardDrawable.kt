@@ -50,12 +50,6 @@ internal class CheckerboardDrawable(
     for (halfOfColumnCount in startingHalfOfColumnCount..width) {
       val rowCount = ratio * halfOfColumnCount
       if (rowCount.isCloseToInteger()) {
-        /*println("width: $width")
-        println("height: $height")
-        println("rowCount: $rowCount")
-        println("columnCount: ${halfOfColumnCount * 2}")
-        println("sideLength: ${height / rowCount}")
-        println("sideLength: ${width / (2 * halfOfColumnCount).toFloat()}")*/
         return width / (2 * halfOfColumnCount).toFloat()
       }
     }

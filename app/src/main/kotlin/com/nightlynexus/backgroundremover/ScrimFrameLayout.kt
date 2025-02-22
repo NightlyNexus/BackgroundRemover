@@ -5,27 +5,35 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.WindowInsets
-import androidx.recyclerview.widget.RecyclerView
+import android.widget.FrameLayout
 
-private class ShimRecyclerView(
+internal class ScrimFrameLayout(
   context: Context,
   attrs: AttributeSet
-) : RecyclerView(context, attrs) {
-  private var insetTop = 0
+) : FrameLayout(context, attrs) {
   private val paint = Paint().apply { color = context.getColor(R.color.output_list_shim) }
+  private var insetTop = 0
+  private var showScrim = false
 
   init {
     // TODO: API?
-    val paddingTop = paddingTop
     setOnApplyWindowInsetsListener { v, insets ->
-      insetTop = insets.getInsets(WindowInsets.Type.systemBars()).top
-      v.setPadding(0, paddingTop + insetTop, 0, paddingBottom)
+      val systemBars = insets.getInsets(WindowInsets.Type.systemBars())
+      v.setPadding(systemBars.left, 0, systemBars.right, 0)
+      insetTop = systemBars.top
       insets
     }
   }
 
+  fun showScrim(show: Boolean) {
+    showScrim = show
+    invalidate()
+  }
+
   override fun dispatchDraw(canvas: Canvas) {
     super.dispatchDraw(canvas)
-    canvas.drawRect(0f, 0f, width.toFloat(), insetTop.toFloat(), paint)
+    if (showScrim) {
+      canvas.drawRect(0f, 0f, width.toFloat(), insetTop.toFloat(), paint)
+    }
   }
 }

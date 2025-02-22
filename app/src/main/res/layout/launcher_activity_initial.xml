@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/select_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:ignore="MergeRootFrame">
+  <!-- We need the nesting for setting the padding from the window insets. We cannot instead set the
+  margins on the inner smaller container because the margins will get doubled with center
+  layout_gravity and cause the inner smaller container not to get centered correctly.
+
+   We could set the padding on the root window view, but then we would need to remove the padding
+   when leaving the initial selection view, and that is too much work. -->
+
+  <LinearLayout
+      android:id="@+id/select_container"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center"
+      android:background="?selectableItemBackground"
+      android:gravity="center_horizontal"
+      android:orientation="vertical"
+      tools:ignore="UselessParent">
+    <!-- We need the nesting for setting the click listener on this smaller container. -->
+
+    <ImageView
+        android:id="@+id/select_image"
+        android:layout_width="256dp"
+        android:layout_height="256dp"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="16dp"
+        android:contentDescription="@string/select_image_content_description"
+        android:src="@drawable/select" />
+
+    <TextView
+        android:id="@+id/select_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginBottom="24dp"
+        android:text="@string/select_text"
+        android:textSize="28sp" />
+  </LinearLayout>
+</FrameLayout>

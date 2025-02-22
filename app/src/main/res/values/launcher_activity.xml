@@ -2,7 +2,8 @@
 <resources>
   <string name="select_image_content_description">Select images icon</string>
   <string name="select_text">Select images</string>
-  <string name="save_all">Save all</string>
+  <string name="save_all_multiple">Save all</string>
+  <string name="save_all_single">Save</string>
   <string name="reselect_image_content_description">Select new images icon</string>
   <string name="reselect_text">Select new images</string>
 
