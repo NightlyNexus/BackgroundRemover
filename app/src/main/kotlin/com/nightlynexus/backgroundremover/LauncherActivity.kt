@@ -28,15 +28,16 @@ class LauncherActivity : AppCompatActivity() {
     backgroundRemover = app.backgroundRemover
     super.onCreate(savedInstanceState)
 
+    val contentView = findViewById<View>(android.R.id.content)
     setContentView(R.layout.launcher_activity_initial)
-    val selectRoot = findViewById<View>(R.id.select_root)
     // TODO: API?
-    selectRoot.setOnApplyWindowInsetsListener { v, insets ->
+    // We remove this window insets listener and the padding when leaving the selection view.
+    contentView.setOnApplyWindowInsetsListener { v, insets ->
       val systemBars = insets.getInsets(WindowInsets.Type.systemBars())
       v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
       insets
     }
-    val selectContainer = selectRoot.findViewById<View>(R.id.select_container)
+    val selectContainer = contentView.findViewById<View>(R.id.select_container)
 
     val selectOnClickListener = View.OnClickListener {
       pickMedia.launch(Intent(ACTION_PICK, EXTERNAL_CONTENT_URI).apply {
@@ -58,8 +59,10 @@ class LauncherActivity : AppCompatActivity() {
         uris += clipData.getItemAt(i).uri
       }
 
+      contentView.setOnApplyWindowInsetsListener(null)
+      contentView.setPadding(0, 0, 0, 0)
       setContentView(R.layout.launcher_activity_selected)
-      val rootView = findViewById<View>(R.id.root)
+      val rootView = contentView.findViewById<View>(R.id.root)
       rootView.requestApplyInsets()
       val outputContainer = rootView.findViewById<ScrimFrameLayout>(R.id.output_container)
       val outputListView = outputContainer.findViewById<RecyclerView>(R.id.output_list)
