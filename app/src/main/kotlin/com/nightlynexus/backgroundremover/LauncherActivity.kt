@@ -40,10 +40,10 @@ class LauncherActivity : AppCompatActivity() {
     val selectContainer = contentView.findViewById<View>(R.id.select_container)
 
     val selectOnClickListener = View.OnClickListener {
-      pickMedia.launch(Intent(ACTION_PICK, EXTERNAL_CONTENT_URI).apply {
-        type = "image/*"
-        putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-      })
+      val intent = Intent(ACTION_PICK)
+      intent.setDataAndType(EXTERNAL_CONTENT_URI, "image/*")
+      intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+      pickMedia.launch(intent)
     }
     selectContainer.setOnClickListener(selectOnClickListener)
     pickMedia = registerForActivityResult(
