@@ -7,13 +7,15 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI
 import android.view.View
-import android.view.WindowInsets
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.RecyclerView
 import java.util.concurrent.Executor
 
@@ -28,12 +30,15 @@ class LauncherActivity : AppCompatActivity() {
     backgroundRemover = app.backgroundRemover
     super.onCreate(savedInstanceState)
 
+    WindowCompat.setDecorFitsSystemWindows(window, false)
+
     val contentView = findViewById<View>(android.R.id.content)
     setContentView(R.layout.launcher_activity_initial)
-    // TODO: API?
     // We remove this window insets listener and the padding when leaving the selection view.
-    contentView.setOnApplyWindowInsetsListener { v, insets ->
-      val systemBars = insets.getInsets(WindowInsets.Type.systemBars())
+    ViewCompat.setOnApplyWindowInsetsListener(contentView) { v, insets ->
+      val systemBars = insets.getInsets(
+        WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
+      )
       v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
       insets
     }
@@ -59,7 +64,7 @@ class LauncherActivity : AppCompatActivity() {
         uris += clipData.getItemAt(i).uri
       }
 
-      contentView.setOnApplyWindowInsetsListener(null)
+      ViewCompat.setOnApplyWindowInsetsListener(contentView, null)
       contentView.setPadding(0, 0, 0, 0)
       setContentView(R.layout.launcher_activity_selected)
       val rootView = contentView.findViewById<View>(R.id.root)

@@ -61,6 +61,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/output_single_image"
             android:layout_centerHorizontal="true"
+            android:layout_marginBottom="16dp"
             android:gravity="center_horizontal"
             android:textSize="18sp" />
 
@@ -69,15 +70,10 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_below="@id/output_single_image"
-            android:layout_centerHorizontal="true" />
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="16dp" />
       </com.nightlynexus.backgroundremover.RelativeLayoutWhenShortLinearLayoutWhenTall>
     </ScrollView>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="8dp"
-        android:layout_gravity="bottom"
-        android:background="@drawable/save_all_bar_shadow" />
   </com.nightlynexus.backgroundremover.ScrimFrameLayout>
 
   <LinearLayout
@@ -120,6 +116,7 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
             android:layout_marginBottom="16dp"
+            android:gravity="center_horizontal"
             android:text="@string/reselect_text"
             android:textSize="16sp" />
       </LinearLayout>
@@ -153,6 +150,7 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
             android:layout_marginBottom="16dp"
+            android:gravity="center_horizontal"
             android:text="@string/reselect_text"
             android:textSize="16sp"
             android:visibility="invisible" />

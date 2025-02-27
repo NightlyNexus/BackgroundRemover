@@ -4,36 +4,60 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.util.AttributeSet
-import android.view.WindowInsets
 import android.widget.FrameLayout
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 
 internal class ScrimFrameLayout(
   context: Context,
   attrs: AttributeSet
 ) : FrameLayout(context, attrs) {
-  private val paint = Paint().apply { color = context.getColor(R.color.output_list_shim) }
+  private val scrim = Paint().apply { color = context.getColor(R.color.output_list_scrim) }
+  private val saveAllBarShadow = AppCompatResources.getDrawable(
+    context,
+    R.drawable.save_all_bar_shadow
+  )!!
+  private val saveAllBarShadowHeight = resources.getDimensionPixelSize(
+    R.dimen.save_all_bar_shadow_height
+  )
   private var insetTop = 0
+  private var insetLeft = 0
+  private var insetRight = 0
   private var showScrim = false
 
   init {
-    // TODO: API?
-    setOnApplyWindowInsetsListener { v, insets ->
-      val systemBars = insets.getInsets(WindowInsets.Type.systemBars())
-      v.setPadding(systemBars.left, 0, systemBars.right, 0)
+    ViewCompat.setOnApplyWindowInsetsListener(this) { _, insets ->
+      val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
       insetTop = systemBars.top
+      insetLeft = systemBars.left
+      insetRight = systemBars.right
       insets
     }
   }
 
   fun showScrim(show: Boolean) {
-    showScrim = show
-    invalidate()
+    val oldShow = showScrim
+    if (show != oldShow) {
+      showScrim = show
+      invalidate()
+    }
   }
 
   override fun dispatchDraw(canvas: Canvas) {
     super.dispatchDraw(canvas)
+    val left = insetLeft
+    val right = width - insetRight
     if (showScrim) {
-      canvas.drawRect(0f, 0f, width.toFloat(), insetTop.toFloat(), paint)
+      canvas.drawRect(
+        left.toFloat(),
+        0f,
+        right.toFloat(),
+        insetTop.toFloat(),
+        scrim
+      )
     }
+    saveAllBarShadow.setBounds(left, height - saveAllBarShadowHeight, right, height)
+    saveAllBarShadow.draw(canvas)
   }
 }

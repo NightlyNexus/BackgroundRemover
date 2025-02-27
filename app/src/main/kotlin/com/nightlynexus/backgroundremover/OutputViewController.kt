@@ -7,11 +7,12 @@ import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowInsets
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -46,34 +47,44 @@ internal class OutputViewController(
   )
 
   init {
-    // TODO: API?
     val outputListViewPaddingTop = outputListView.paddingTop
     val outputListViewPaddingBottom = outputListView.paddingBottom
-    outputListView.setOnApplyWindowInsetsListener { v, insets ->
-      val systemBars = insets.getInsets(WindowInsets.Type.systemBars())
+    ViewCompat.setOnApplyWindowInsetsListener(outputListView) { v, insets ->
+      val systemBarsAndCutout = insets.getInsets(
+        WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
+      )
       v.setPadding(
-        0,
-        outputListViewPaddingTop + systemBars.top,
-        0,
+        systemBarsAndCutout.left,
+        outputListViewPaddingTop + systemBarsAndCutout.top,
+        systemBarsAndCutout.right,
         outputListViewPaddingBottom
       )
       insets
     }
     val outputSingleContainerViewPaddingTop = outputSingleContainerView.paddingTop
     val outputSingleContainerViewPaddingBottom = outputSingleContainerView.paddingBottom
-    outputSingleContainerView.setOnApplyWindowInsetsListener { v, insets ->
-      val systemBars = insets.getInsets(WindowInsets.Type.systemBars())
+    ViewCompat.setOnApplyWindowInsetsListener(outputSingleContainerView) { v, insets ->
+      val systemBarsAndCutout = insets.getInsets(
+        WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
+      )
       v.setPadding(
-        0,
-        outputSingleContainerViewPaddingTop + systemBars.top,
-        0,
+        systemBarsAndCutout.left,
+        outputSingleContainerViewPaddingTop + systemBarsAndCutout.top,
+        systemBarsAndCutout.right,
         outputSingleContainerViewPaddingBottom
       )
       insets
     }
-    saveAllContainer.setOnApplyWindowInsetsListener { v, insets ->
-      val systemBars = insets.getInsets(WindowInsets.Type.systemBars())
-      v.setPadding(systemBars.left, 0, systemBars.right, systemBars.bottom)
+    ViewCompat.setOnApplyWindowInsetsListener(saveAllContainer) { v, insets ->
+      val systemBarsAndCutout = insets.getInsets(
+        WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
+      )
+      v.setPadding(
+        systemBarsAndCutout.left,
+        0,
+        systemBarsAndCutout.right,
+        systemBarsAndCutout.bottom
+      )
       insets
     }
 
@@ -149,6 +160,7 @@ internal class OutputViewController(
 
     val size = uris.size
     if (size == 1) {
+      // todo only show scrim when can scroll OR can we check height inside scroll/recycler view? wrap_conent height RecyckerVuew?
       outputContainer.showScrim(false)
       outputListView.visibility = View.GONE
       outputSingleContainerView.visibility = View.VISIBLE
