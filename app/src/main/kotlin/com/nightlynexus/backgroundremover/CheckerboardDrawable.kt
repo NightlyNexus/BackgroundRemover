@@ -44,6 +44,9 @@ internal class CheckerboardDrawable(
   }
 
   private fun sideLength(idealSquareSideLength: Float, width: Int, height: Int): Float {
+    if (width == 0 || height == 0) {
+      return 0f
+    }
     val doubleHeight = 2 * height
     val ratio = doubleHeight / width.toFloat()
     val startingHalfOfColumnCount = round(width / (2 * idealSquareSideLength)).toInt()
