@@ -20,7 +20,6 @@ import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import java.util.concurrent.Executor
 
 internal class OutputViewController(
-  private val outputContainer: ScrimFrameLayout,
   private val outputListView: RecyclerView,
   private val outputSingleContainerView: View,
   outputSingleLoading: View,
@@ -47,34 +46,6 @@ internal class OutputViewController(
   )
 
   init {
-    val outputListViewPaddingTop = outputListView.paddingTop
-    val outputListViewPaddingBottom = outputListView.paddingBottom
-    ViewCompat.setOnApplyWindowInsetsListener(outputListView) { v, insets ->
-      val systemBarsAndCutout = insets.getInsets(
-        WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
-      )
-      v.setPadding(
-        systemBarsAndCutout.left,
-        outputListViewPaddingTop + systemBarsAndCutout.top,
-        systemBarsAndCutout.right,
-        outputListViewPaddingBottom
-      )
-      insets
-    }
-    val outputSingleContainerViewPaddingTop = outputSingleContainerView.paddingTop
-    val outputSingleContainerViewPaddingBottom = outputSingleContainerView.paddingBottom
-    ViewCompat.setOnApplyWindowInsetsListener(outputSingleContainerView) { v, insets ->
-      val systemBarsAndCutout = insets.getInsets(
-        WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
-      )
-      v.setPadding(
-        systemBarsAndCutout.left,
-        outputSingleContainerViewPaddingTop + systemBarsAndCutout.top,
-        systemBarsAndCutout.right,
-        outputSingleContainerViewPaddingBottom
-      )
-      insets
-    }
     ViewCompat.setOnApplyWindowInsetsListener(saveAllContainer) { v, insets ->
       val systemBarsAndCutout = insets.getInsets(
         WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
@@ -160,13 +131,10 @@ internal class OutputViewController(
 
     val size = uris.size
     if (size == 1) {
-      // todo only show scrim when can scroll OR can we check height inside scroll/recycler view? wrap_conent height RecyckerVuew?
-      outputContainer.showScrim(false)
       outputListView.visibility = View.GONE
       outputSingleContainerView.visibility = View.VISIBLE
       saveAllButton.setText(R.string.save_all_single)
     } else {
-      outputContainer.showScrim(true)
       outputListView.visibility = View.VISIBLE
       outputSingleContainerView.visibility = View.GONE
       saveAllButton.setText(R.string.save_all_multiple)

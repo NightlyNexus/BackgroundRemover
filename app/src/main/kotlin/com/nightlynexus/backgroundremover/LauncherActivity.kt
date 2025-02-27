@@ -69,7 +69,7 @@ class LauncherActivity : AppCompatActivity() {
       setContentView(R.layout.launcher_activity_selected)
       val rootView = contentView.findViewById<View>(R.id.root)
       rootView.requestApplyInsets()
-      val outputContainer = rootView.findViewById<ScrimFrameLayout>(R.id.output_container)
+      val outputContainer = rootView.findViewById<View>(R.id.output_container)
       val outputListView = outputContainer.findViewById<RecyclerView>(R.id.output_list)
       val outputSingleContainerView = outputContainer.findViewById<View>(R.id.output_single_container)
       val outputSingleLoading = outputContainer.findViewById<View>(R.id.output_single_loading)
@@ -84,7 +84,6 @@ class LauncherActivity : AppCompatActivity() {
         setOnClickListener(selectOnClickListener)
       }
       val outputViewController = OutputViewController(
-        outputContainer,
         outputListView,
         outputSingleContainerView,
         outputSingleLoading,

@@ -7,20 +7,20 @@
     android:gravity="center"
     android:orientation="vertical">
 
-  <com.nightlynexus.backgroundremover.ScrimFrameLayout
+  <com.nightlynexus.backgroundremover.SaveAllBottomBarShadowFrameLayout
       android:id="@+id/output_container"
       android:layout_width="match_parent"
       android:layout_height="0dp"
       android:layout_weight="1">
 
-    <androidx.recyclerview.widget.RecyclerView
+    <com.nightlynexus.backgroundremover.ScrimRecyclerView
         android:id="@+id/output_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
         android:paddingVertical="8dp" />
 
-    <ScrollView
+    <com.nightlynexus.backgroundremover.ScrimScrollView
         android:id="@+id/output_single_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -73,8 +73,8 @@
             android:layout_centerHorizontal="true"
             android:layout_marginBottom="16dp" />
       </com.nightlynexus.backgroundremover.RelativeLayoutWhenShortLinearLayoutWhenTall>
-    </ScrollView>
-  </com.nightlynexus.backgroundremover.ScrimFrameLayout>
+    </com.nightlynexus.backgroundremover.ScrimScrollView>
+  </com.nightlynexus.backgroundremover.SaveAllBottomBarShadowFrameLayout>
 
   <LinearLayout
       android:id="@+id/save_all_container"
