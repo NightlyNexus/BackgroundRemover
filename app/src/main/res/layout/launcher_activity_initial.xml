@@ -1,32 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/select_container"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_gravity="center"
-    android:background="?selectableItemBackground"
-    android:gravity="center_horizontal"
-    android:orientation="vertical"
-    tools:ignore="Overdraw">
-  <!-- The selectable background is not overdraw. This is an a smaller, inner clickable view. -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-  <ImageView
-      android:id="@+id/select_image"
-      android:layout_width="256dp"
-      android:layout_height="256dp"
-      android:layout_marginHorizontal="24dp"
-      android:layout_marginTop="24dp"
-      android:layout_marginBottom="16dp"
-      android:contentDescription="@string/select_image_content_description"
-      android:src="@drawable/select" />
-
-  <TextView
-      android:id="@+id/select_text"
+  <LinearLayout xmlns:tools="http://schemas.android.com/tools"
+      android:id="@+id/select_container"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:layout_marginHorizontal="24dp"
-      android:layout_marginBottom="24dp"
-      android:text="@string/select_text"
-      android:textSize="28sp" />
-</LinearLayout>
+      android:layout_gravity="center"
+      android:background="?selectableItemBackground"
+      android:gravity="center_horizontal"
+      android:orientation="vertical"
+      tools:ignore="Overdraw">
+    <!-- The selectable background is not overdraw. This is an a smaller, inner clickable view. -->
+
+    <ImageView
+        android:id="@+id/select_image"
+        android:layout_width="256dp"
+        android:layout_height="256dp"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="16dp"
+        android:contentDescription="@string/select_image_content_description"
+        android:src="@drawable/select" />
+
+    <TextView
+        android:id="@+id/select_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginBottom="24dp"
+        android:text="@string/select_text"
+        android:textSize="28sp" />
+  </LinearLayout>
+</ScrollView>
