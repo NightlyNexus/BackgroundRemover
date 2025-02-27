@@ -8,9 +8,10 @@ import com.nightlynexus.backgroundremover.OutputViewController.ImageResult
 internal class OutputItemViewController(
   private val loadingView: View,
   private val imageView: ImageView,
-  private val messageView: TextView,
+  private val fileNameView: TextView,
   private val saveButton: View?,
-  private val saveLoadingView: View
+  private val saveLoadingView: View,
+  private val savedFileNameView: TextView
 ) {
   private val context = loadingView.context
   private lateinit var imageResult: ImageResult
@@ -33,8 +34,9 @@ internal class OutputItemViewController(
           R.string.output_item_image_content_description,
           fileName
         )
+        fileNameView.text = null
         val resultingPath = imageResult.resultingPath
-        messageView.text = if (resultingPath == null) {
+        savedFileNameView.text = if (resultingPath == null) {
           context.getString(
             R.string.output_item_message_saved_to_disk_failed_to_get_path,
             fileName
@@ -47,9 +49,10 @@ internal class OutputItemViewController(
         }
         loadingView.visibility = View.GONE
         imageView.visibility = View.VISIBLE
-        messageView.visibility = View.VISIBLE
+        fileNameView.visibility = View.GONE
         saveButton?.visibility = View.INVISIBLE
         saveLoadingView.visibility = View.GONE
+        savedFileNameView.visibility = View.VISIBLE
       }
 
       is ImageResult.LoadingSaveToDisk -> {
@@ -58,15 +61,19 @@ internal class OutputItemViewController(
           R.string.output_item_image_content_description,
           imageResult.fileName
         )
-        messageView.text = context.getString(
+        fileNameView.text = context.getString(
           R.string.output_item_message_extracted_foreground,
           imageResult.fileName
         )
+        savedFileNameView.text = null
         loadingView.visibility = View.GONE
         imageView.visibility = View.VISIBLE
-        messageView.visibility = View.INVISIBLE
+        // Make fileNameView invisible, not gone, to keep the output item at the same height after
+        // the user clicks the save button.
+        fileNameView.visibility = View.INVISIBLE
         saveButton?.visibility = View.INVISIBLE
         saveLoadingView.visibility = View.VISIBLE
+        savedFileNameView.visibility = View.GONE
       }
 
       is ImageResult.ExtractedForeground -> {
@@ -75,15 +82,17 @@ internal class OutputItemViewController(
           R.string.output_item_image_content_description,
           imageResult.fileName
         )
-        messageView.text = context.getString(
+        fileNameView.text = context.getString(
           R.string.output_item_message_extracted_foreground,
           imageResult.fileName
         )
+        savedFileNameView.text = null
         loadingView.visibility = View.GONE
         imageView.visibility = View.VISIBLE
-        messageView.visibility = View.VISIBLE
+        fileNameView.visibility = View.VISIBLE
         saveButton?.visibility = View.VISIBLE
         saveLoadingView.visibility = View.GONE
+        savedFileNameView.visibility = View.GONE
       }
 
       is ImageResult.FailedToExtractForeground -> {
@@ -92,21 +101,27 @@ internal class OutputItemViewController(
         //  to move FailedToExtractForeground to the LoadingForeground state.
         imageView.setImageDrawable(null)
         imageView.contentDescription = null
-        messageView.setText(R.string.output_item_message_failed_to_extract_foreground)
+        fileNameView.text = null
+        savedFileNameView.setText(R.string.output_item_message_failed_to_extract_foreground)
         loadingView.visibility = View.GONE
         imageView.visibility = View.VISIBLE
-        messageView.visibility = View.VISIBLE
+        fileNameView.visibility = View.GONE
         saveButton?.visibility = View.INVISIBLE
         saveLoadingView.visibility = View.GONE
+        savedFileNameView.visibility = View.VISIBLE
       }
 
       is ImageResult.LoadingForeground -> {
-        messageView.text = null
+        imageView.setImageDrawable(null)
+        imageView.contentDescription = null
+        fileNameView.text = null
+        savedFileNameView.text = null
         loadingView.visibility = View.VISIBLE
         imageView.visibility = View.GONE
-        messageView.visibility = View.INVISIBLE
+        fileNameView.visibility = View.GONE
         saveButton?.visibility = View.INVISIBLE
         saveLoadingView.visibility = View.GONE
+        savedFileNameView.visibility = View.GONE
       }
     }
   }
@@ -116,7 +131,8 @@ internal class OutputItemViewController(
   fun clear() {
     imageView.setImageDrawable(null)
     imageView.contentDescription = null
-    messageView.text = null
+    fileNameView.text = null
+    savedFileNameView.text = null
   }
 
   fun needsChangeAnimation(update: OutputItemViewController): Boolean {

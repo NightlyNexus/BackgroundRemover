@@ -71,12 +71,19 @@ class LauncherActivity : AppCompatActivity() {
       rootView.requestApplyInsets()
       val outputContainer = rootView.findViewById<View>(R.id.output_container)
       val outputListView = outputContainer.findViewById<RecyclerView>(R.id.output_list)
-      val outputSingleContainerView = outputContainer.findViewById<View>(R.id.output_single_container)
+      val outputSingleContainerView = outputContainer.findViewById<View>(
+        R.id.output_single_container
+      )
       val outputSingleLoading = outputContainer.findViewById<View>(R.id.output_single_loading)
       val outputSingleImage = outputContainer.findViewById<ImageView>(R.id.output_single_image)
-      val outputSingleMessage = outputContainer.findViewById<TextView>(R.id.output_single_message)
+      val outputSingleFileName = outputContainer.findViewById<TextView>(
+        R.id.output_single_file_name
+      )
       val outputSingleSaveLoading = outputContainer.findViewById<View>(
         R.id.output_single_save_loading
+      )
+      val outputSingleSavedFileName = outputContainer.findViewById<TextView>(
+        R.id.output_single_saved_file_name
       )
       val saveAllContainer = rootView.findViewById<View>(R.id.save_all_container)
       val saveAllButton = saveAllContainer.findViewById<TextView>(R.id.save_all)
@@ -88,8 +95,9 @@ class LauncherActivity : AppCompatActivity() {
         outputSingleContainerView,
         outputSingleLoading,
         outputSingleImage,
-        outputSingleMessage,
+        outputSingleFileName,
         outputSingleSaveLoading,
+        outputSingleSavedFileName,
         saveAllContainer,
         saveAllButton,
         imageExecutor,

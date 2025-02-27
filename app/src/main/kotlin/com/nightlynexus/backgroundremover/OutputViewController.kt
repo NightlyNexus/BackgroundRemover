@@ -24,8 +24,9 @@ internal class OutputViewController(
   private val outputSingleContainerView: View,
   outputSingleLoading: View,
   outputSingleImage: ImageView,
-  outputSingleMessage: TextView,
+  outputSingleFileName: TextView,
   outputSingleSaveLoading: View,
+ outputSingleSavedFileName: TextView,
   saveAllContainer: View,
   private val saveAllButton: TextView,
   private val imageExecutor: Executor,
@@ -40,9 +41,10 @@ internal class OutputViewController(
   private val outputSingleItemViewController = OutputItemViewController(
     outputSingleLoading,
     outputSingleImage,
-    outputSingleMessage,
+    outputSingleFileName,
     saveButton = null,
-    outputSingleSaveLoading
+    outputSingleSaveLoading,
+    outputSingleSavedFileName
   )
 
   init {
@@ -306,7 +308,7 @@ internal class OutputViewController(
       val outputItemViewController = run {
         val loadingView = itemView.findViewById<View>(R.id.loading)!!
         val imageView = itemView.findViewById<ImageView>(R.id.image)!!
-        val messageView = itemView.findViewById<TextView>(R.id.message)!!
+        val fileNameView = itemView.findViewById<TextView>(R.id.file_name)!!
         val saveButton = itemView.findViewById<View>(R.id.save)!!.apply {
           setOnClickListener {
             val index = adapterPosition
@@ -327,7 +329,15 @@ internal class OutputViewController(
           }
         }
         val saveLoadingView = itemView.findViewById<View>(R.id.save_loading)!!
-        OutputItemViewController(loadingView, imageView, messageView, saveButton, saveLoadingView)
+        val savedFileNameView = itemView.findViewById<TextView>(R.id.saved_file_name)!!
+        OutputItemViewController(
+          loadingView,
+          imageView,
+          fileNameView,
+          saveButton,
+          saveLoadingView,
+          savedFileNameView
+        )
       }
     }
 

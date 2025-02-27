@@ -56,7 +56,7 @@
         <!-- We set the content description when we set the image. -->
 
         <TextView
-            android:id="@+id/output_single_message"
+            android:id="@+id/output_single_file_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/output_single_image"
@@ -72,6 +72,16 @@
             android:layout_below="@id/output_single_image"
             android:layout_centerHorizontal="true"
             android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:id="@+id/output_single_saved_file_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/output_single_image"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="16dp"
+            android:gravity="center_horizontal"
+            android:textSize="18sp" />
       </com.nightlynexus.backgroundremover.RelativeLayoutWhenShortLinearLayoutWhenTall>
     </com.nightlynexus.backgroundremover.ScrimScrollView>
   </com.nightlynexus.backgroundremover.SaveAllBottomBarShadowFrameLayout>
