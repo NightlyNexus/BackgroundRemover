@@ -11,7 +11,7 @@ Background Remover runs extremely fast all on only your device’s local CPU usi
 I use it to make digital scans of tiles and cards from board games.
 
 <a href='https://play.google.com/store/apps/details?id=com.nightlynexus.backgroundremover'><img alt='Get Background Remover on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' height="100"/></a>
-<br><img alt='Screenshot' src='/images/screenshot_1.png' width="350"/><img alt='Screenshot' src='/images/screenshot_2.png' width="350"/>
+<br><img alt='Screenshot' src='/images/screenshot_1.png' width="350"/> <img alt='Screenshot' src='/images/screenshot_2.png' width="350"/>
 
 
 License
