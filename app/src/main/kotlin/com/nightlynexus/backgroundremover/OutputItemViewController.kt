@@ -28,7 +28,7 @@ internal class OutputItemViewController(
     this.imageResult = imageResult
     when (imageResult) {
       is ImageResult.SavedToDisk -> {
-        imageView.setImageBitmap(imageResult.foreground)
+        imageView.setImageBitmap(imageResult.foregroundToDisplay)
         val fileName = imageResult.fileName
         imageView.contentDescription = context.getString(
           R.string.output_item_image_content_description,
@@ -56,7 +56,7 @@ internal class OutputItemViewController(
       }
 
       is ImageResult.LoadingSaveToDisk -> {
-        imageView.setImageBitmap(imageResult.foreground)
+        imageView.setImageBitmap(imageResult.foregroundToDisplay)
         imageView.contentDescription = context.getString(
           R.string.output_item_image_content_description,
           imageResult.fileName
@@ -77,7 +77,7 @@ internal class OutputItemViewController(
       }
 
       is ImageResult.ExtractedForeground -> {
-        imageView.setImageBitmap(imageResult.foreground)
+        imageView.setImageBitmap(imageResult.foregroundToDisplay)
         imageView.contentDescription = context.getString(
           R.string.output_item_image_content_description,
           imageResult.fileName

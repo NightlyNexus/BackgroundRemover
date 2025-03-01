@@ -83,12 +83,19 @@ internal class OutputViewController(
           is ImageResult.ExtractedForeground -> {
             val uri = oldImageResult.uri
             val fileName = oldImageResult.fileName
-            val foreground = oldImageResult.foreground
-            val saveBitmapAsPngRunnable = SaveBitmapAsPngRunnable(uri, fileName, foreground)
+            val foregroundToDisplay = oldImageResult.foregroundToDisplay
+            val foregroundToSave = oldImageResult.foregroundToSave
+            val saveBitmapAsPngRunnable = SaveBitmapAsPngRunnable(
+              uri,
+              fileName,
+              foregroundToDisplay,
+              foregroundToSave
+            )
             val newImageResult = ImageResult.LoadingSaveToDisk(
               uri,
               fileName,
-              foreground,
+              foregroundToDisplay,
+              foregroundToSave,
               saveBitmapAsPngRunnable
             )
             imageResults[i] = newImageResult
@@ -190,12 +197,22 @@ internal class OutputViewController(
       extractedForegroundOrFailureCount = 0
     }
 
-    override fun onSuccess(imageUri: Uri, fileName: String, foreground: Bitmap) {
+    override fun onSuccess(
+      imageUri: Uri,
+      fileName: String,
+      foregroundToDisplay: Bitmap,
+      foregroundToSave: Bitmap
+    ) {
       if (canceled) {
         return
       }
       val existingIndex = findIndex(imageUri)
-      val imageResult = ImageResult.ExtractedForeground(imageUri, fileName, foreground)
+      val imageResult = ImageResult.ExtractedForeground(
+        imageUri,
+        fileName,
+        foregroundToDisplay,
+        foregroundToSave
+      )
       imageResults[existingIndex] = imageResult
       if (imageResults.size == 1) {
         outputSingleItemViewController.setImageResult(imageResult)
@@ -205,7 +222,10 @@ internal class OutputViewController(
       incrementExtractedForegroundOrFailureCount()
     }
 
-    override fun onFailure(imageUri: Uri, e: Exception) {
+    override fun onFailure(
+      imageUri: Uri,
+      e: Exception
+    ) {
       if (canceled) {
         return
       }
@@ -233,12 +253,13 @@ internal class OutputViewController(
   inner class SaveBitmapAsPngRunnable(
     private val uri: Uri,
     private val fileName: String,
-    private val foreground: Bitmap
+    private val foregroundToDisplay: Bitmap,
+    private val foregroundToSave: Bitmap
   ) : Runnable {
     var canceled = false
 
     override fun run() {
-      val result = saveBitmapAsPng(context.contentResolver, foreground, fileName)
+      val result = saveBitmapAsPng(context.contentResolver, foregroundToSave, fileName)
       mainHandler.post {
         if (canceled) {
           return@post
@@ -247,7 +268,13 @@ internal class OutputViewController(
         when (result) {
           is SaveBitmapResult.Success -> {
             val resultingPath = result.filePath
-            val imageResult = ImageResult.SavedToDisk(uri, fileName, foreground, resultingPath)
+            val imageResult = ImageResult.SavedToDisk(
+              uri,
+              fileName,
+              foregroundToDisplay,
+              foregroundToSave,
+              resultingPath
+            )
             imageResults[existingIndex] = imageResult
             if (imageResults.size == 1) {
               outputSingleItemViewController.setImageResult(imageResult)
@@ -257,7 +284,12 @@ internal class OutputViewController(
           }
 
           SaveBitmapResult.Failure -> {
-            val imageResult = ImageResult.ExtractedForeground(uri, fileName, foreground)
+            val imageResult = ImageResult.ExtractedForeground(
+              uri,
+              fileName,
+              foregroundToDisplay,
+              foregroundToSave
+            )
             imageResults[existingIndex] = imageResult
             decrementImageResultsInDisableSaveAllStateCount()
             Toast.makeText(
@@ -315,12 +347,19 @@ internal class OutputViewController(
             val success = imageResults[index] as ImageResult.ExtractedForeground
             val uri = success.uri
             val fileName = success.fileName
-            val foreground = success.foreground
-            val saveBitmapAsPngRunnable = SaveBitmapAsPngRunnable(uri, fileName, foreground)
+            val foregroundToDisplay = success.foregroundToDisplay
+            val foregroundToSave = success.foregroundToSave
+            val saveBitmapAsPngRunnable = SaveBitmapAsPngRunnable(
+              uri,
+              fileName,
+              foregroundToDisplay,
+              foregroundToSave
+            )
             imageResults[index] = ImageResult.LoadingSaveToDisk(
               uri,
               fileName,
-              foreground,
+              foregroundToDisplay,
+              foregroundToSave,
               saveBitmapAsPngRunnable
             )
             incrementImageResultsInDisableSaveAllStateCount()
@@ -363,21 +402,24 @@ internal class OutputViewController(
     class SavedToDisk(
       override val uri: Uri,
       val fileName: String,
-      val foreground: Bitmap,
+      val foregroundToDisplay: Bitmap,
+      val foregroundToSave: Bitmap,
       val resultingPath: String?
     ) : ImageResult
 
     class LoadingSaveToDisk(
       override val uri: Uri,
       val fileName: String,
-      val foreground: Bitmap,
+      val foregroundToDisplay: Bitmap,
+      val foregroundToSave: Bitmap,
       val saveBitmapAsPngRunnable: SaveBitmapAsPngRunnable
     ) : ImageResult
 
     class ExtractedForeground(
       override val uri: Uri,
       val fileName: String,
-      val foreground: Bitmap
+      val foregroundToDisplay: Bitmap,
+      val foregroundToSave: Bitmap
     ) : ImageResult
 
     class FailedToExtractForeground(
