@@ -16,6 +16,7 @@ import java.util.concurrent.Executor
 import kotlin.math.sqrt
 
 internal class BackgroundRemover(private val executor: Executor) {
+  private val confidenceThreshold = 0.5f
   private val maxPixels = 3072 * 4080
   private val mainHandler = Handler(Looper.getMainLooper())
   private val segmenter: SubjectSegmenter = SubjectSegmentation.getClient(
@@ -99,15 +100,94 @@ internal class BackgroundRemover(private val executor: Executor) {
         executor.execute {
           val mask = result.foregroundConfidenceMask!!
           val resultBitmap = originalBitmap.copy(Bitmap.Config.ARGB_8888, true)
-          for (row in 0 until originalHeight) {
-            val maskOffset = (row * scaleHeight).toInt() * newWidth
-            for (column in 0 until originalWidth) {
-              val maskIndex = maskOffset + (column * scaleWidth).toInt()
-              val confidence = mask[maskIndex]
-              if (confidence <= 0.5f) {
-                // TODO: Process this Bitmap in chunks to batch this call.
-                resultBitmap.setPixel(column, row, Color.TRANSPARENT)
+          if (originalWidth > maxPixels) {
+            val pixelBuffer = IntArray(maxPixels)
+            var column = 0
+            var row = 0
+            var maskOffset = 0
+            while (row != originalHeight) {
+              val columnsInPixelBuffer = if (column + maxPixels > originalWidth) {
+                originalWidth - column
+              } else {
+                maxPixels
               }
+              val x = column
+              val y = row
+              resultBitmap.getPixels(
+                pixelBuffer,
+                0,
+                originalWidth,
+                x,
+                y,
+                columnsInPixelBuffer,
+                1
+              )
+              for (pixelBufferIndex in 0 until columnsInPixelBuffer) {
+                val maskIndex = maskOffset + (column * scaleWidth).toInt()
+                val confidence = mask[maskIndex]
+                if (confidence <= 0.5f) {
+                  pixelBuffer[pixelBufferIndex] = Color.TRANSPARENT
+                }
+                column++
+              }
+              resultBitmap.setPixels(
+                pixelBuffer,
+                0,
+                originalWidth,
+                x,
+                y,
+                columnsInPixelBuffer,
+                1
+              )
+              if (column == originalWidth) {
+                column = 0
+                row++
+                maskOffset = (row * scaleHeight).toInt() * newWidth
+              }
+            }
+          } else {
+            val maxRowsInPixelBuffer = maxPixels % originalWidth
+            val pixelBufferSize = originalWidth * maxRowsInPixelBuffer
+            val pixelBuffer = IntArray(pixelBufferSize)
+            var row = 0
+            while (row != originalHeight) {
+              val rowsInPixelBuffer = if (row + maxRowsInPixelBuffer > originalHeight) {
+                originalHeight - row
+              } else {
+                maxRowsInPixelBuffer
+              }
+              val y = row
+              resultBitmap.getPixels(
+                pixelBuffer,
+                0,
+                originalWidth,
+                0,
+                y,
+                originalWidth,
+                rowsInPixelBuffer
+              )
+              var pixelBufferIndex = 0
+              for (i in 0 until rowsInPixelBuffer) {
+                val maskOffset = (row * scaleHeight).toInt() * newWidth
+                for (column in 0 until originalWidth) {
+                  val maskIndex = maskOffset + (column * scaleWidth).toInt()
+                  val confidence = mask[maskIndex]
+                  if (confidence <= confidenceThreshold) {
+                    pixelBuffer[pixelBufferIndex] = Color.TRANSPARENT
+                  }
+                  pixelBufferIndex++
+                }
+                row++
+              }
+              resultBitmap.setPixels(
+                pixelBuffer,
+                0,
+                originalWidth,
+                0,
+                y,
+                originalWidth,
+                rowsInPixelBuffer
+              )
             }
           }
           mainHandler.post {
