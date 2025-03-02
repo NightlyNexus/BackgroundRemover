@@ -9,7 +9,6 @@ import android.os.Looper
 import androidx.annotation.MainThread
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.segmentation.subject.SubjectSegmentation
-import com.google.mlkit.vision.segmentation.subject.SubjectSegmenter
 import com.google.mlkit.vision.segmentation.subject.SubjectSegmenterOptions
 import java.io.IOException
 import java.util.concurrent.Executor
@@ -19,19 +18,26 @@ internal class BackgroundRemover(private val executor: Executor) {
   private val confidenceThreshold = 0.5f
   private val maxPixels = 3072 * 4080
   private val mainHandler = Handler(Looper.getMainLooper())
-  private val segmenter: SubjectSegmenter = SubjectSegmentation.getClient(
+  private val segmenter = SubjectSegmentation.getClient(
     SubjectSegmenterOptions.Builder()
       .setExecutor(executor)
       .enableForegroundBitmap()
       .build()
   )
-  private val segmenterWithMask: SubjectSegmenter = SubjectSegmentation.getClient(
+  private val segmenterWithMask = SubjectSegmentation.getClient(
     SubjectSegmenterOptions.Builder()
       .setExecutor(executor)
       .enableForegroundBitmap()
       .enableForegroundConfidenceMask()
       .build()
   )
+
+  init {
+    // Google recommends initializing the model with a dummy inference.
+    // https://developers.google.com/ml-kit/vision/subject-segmentation/android#tips_to_improve_performance
+    val dummy = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+    segmenter.process(InputImage.fromBitmap(dummy, 0))
+  }
 
   @MainThread
   interface Callback {
