@@ -22,7 +22,9 @@ import java.util.concurrent.Executor
 class LauncherActivity : AppCompatActivity() {
   private lateinit var imageExecutor: Executor
   private lateinit var backgroundRemover: BackgroundRemover
-  private lateinit var pickMedia: ActivityResultLauncher<Intent>
+  private lateinit var selectContainerLauncher: ActivityResultLauncher<Intent>
+  private lateinit var reselectContainerLauncher: ActivityResultLauncher<Intent>
+  private var outputViewController: OutputViewController? = null
 
   override fun onCreate(savedInstanceState: Bundle?) {
     val app = application as BackgroundRemoverApplication
@@ -44,66 +46,93 @@ class LauncherActivity : AppCompatActivity() {
     }
     val selectContainer = contentView.findViewById<View>(R.id.select_container)
 
-    val selectOnClickListener = View.OnClickListener {
-      val intent = Intent(ACTION_PICK)
-      intent.setDataAndType(EXTERNAL_CONTENT_URI, "image/*")
-      intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-      pickMedia.launch(intent)
-    }
-    selectContainer.setOnClickListener(selectOnClickListener)
-    pickMedia = registerForActivityResult(
+    selectContainer.setOnClickListener { selectContainerLauncher.launch(imagePickerIntent()) }
+
+    selectContainerLauncher = registerForActivityResult(
       ActivityResultContracts.StartActivityForResult()
     ) { result: ActivityResult ->
       if (result.resultCode != Activity.RESULT_OK) {
         return@registerForActivityResult
       }
-      val clipData = result.data!!.clipData!!
-      val clipDataItemCount = clipData.itemCount
-      val uris = ArrayList<Uri>(clipDataItemCount)
-      for (i in 0 until clipDataItemCount) {
-        uris += clipData.getItemAt(i).uri
-      }
+      val data = result.data!!
 
-      ViewCompat.setOnApplyWindowInsetsListener(contentView, null)
-      contentView.setPadding(0, 0, 0, 0)
-      setContentView(R.layout.launcher_activity_selected)
-      val rootView = contentView.findViewById<View>(R.id.root)
-      rootView.requestApplyInsets()
-      val outputContainer = rootView.findViewById<View>(R.id.output_container)
-      val outputListView = outputContainer.findViewById<RecyclerView>(R.id.output_list)
-      val outputSingleContainerView = outputContainer.findViewById<View>(
-        R.id.output_single_container
-      )
-      val outputSingleLoading = outputContainer.findViewById<View>(R.id.output_single_loading)
-      val outputSingleImage = outputContainer.findViewById<ImageView>(R.id.output_single_image)
-      val outputSingleFileName = outputContainer.findViewById<TextView>(
-        R.id.output_single_file_name
-      )
-      val outputSingleSaveLoading = outputContainer.findViewById<View>(
-        R.id.output_single_save_loading
-      )
-      val outputSingleSavedFileName = outputContainer.findViewById<TextView>(
-        R.id.output_single_saved_file_name
-      )
-      val saveAllContainer = rootView.findViewById<View>(R.id.save_all_container)
-      val saveAllButton = saveAllContainer.findViewById<TextView>(R.id.save_all)
-      rootView.findViewById<View>(R.id.reselect_container).apply {
-        setOnClickListener(selectOnClickListener)
-      }
-      val outputViewController = OutputViewController(
-        outputListView,
-        outputSingleContainerView,
-        outputSingleLoading,
-        outputSingleImage,
-        outputSingleFileName,
-        outputSingleSaveLoading,
-        outputSingleSavedFileName,
-        saveAllContainer,
-        saveAllButton,
-        imageExecutor,
-        backgroundRemover
-      )
-      outputViewController.setSelectedUris(uris)
+      moveToSelectionView(contentView, data)
     }
+    reselectContainerLauncher = registerForActivityResult(
+      ActivityResultContracts.StartActivityForResult()
+    ) { result: ActivityResult ->
+      if (result.resultCode != Activity.RESULT_OK) {
+        return@registerForActivityResult
+      }
+      val data = result.data!!
+
+      val outputViewController = outputViewController
+      // moveToSelectionView is null if and only if the Android recreated the Activity.
+      if (outputViewController == null) {
+        moveToSelectionView(contentView, data)
+      } else {
+        setUris(outputViewController, data)
+      }
+    }
+  }
+
+  private fun moveToSelectionView(contentView: View, data: Intent) {
+    ViewCompat.setOnApplyWindowInsetsListener(contentView, null)
+    contentView.setPadding(0, 0, 0, 0)
+    setContentView(R.layout.launcher_activity_selected)
+    val rootView = contentView.findViewById<View>(R.id.root)
+    rootView.requestApplyInsets()
+    val outputContainer = rootView.findViewById<View>(R.id.output_container)
+    val outputListView = outputContainer.findViewById<RecyclerView>(R.id.output_list)
+    val outputSingleContainerView = outputContainer.findViewById<View>(
+      R.id.output_single_container
+    )
+    val outputSingleLoading = outputContainer.findViewById<View>(R.id.output_single_loading)
+    val outputSingleImage = outputContainer.findViewById<ImageView>(R.id.output_single_image)
+    val outputSingleFileName = outputContainer.findViewById<TextView>(
+      R.id.output_single_file_name
+    )
+    val outputSingleSaveLoading = outputContainer.findViewById<View>(
+      R.id.output_single_save_loading
+    )
+    val outputSingleSavedFileName = outputContainer.findViewById<TextView>(
+      R.id.output_single_saved_file_name
+    )
+    val saveAllContainer = rootView.findViewById<View>(R.id.save_all_container)
+    val saveAllButton = saveAllContainer.findViewById<TextView>(R.id.save_all)
+    val reselectContainer = rootView.findViewById<View>(R.id.reselect_container)
+    reselectContainer.setOnClickListener { reselectContainerLauncher.launch(imagePickerIntent()) }
+    val outputViewController = OutputViewController(
+      outputListView,
+      outputSingleContainerView,
+      outputSingleLoading,
+      outputSingleImage,
+      outputSingleFileName,
+      outputSingleSaveLoading,
+      outputSingleSavedFileName,
+      saveAllContainer,
+      saveAllButton,
+      imageExecutor,
+      backgroundRemover
+    )
+    this.outputViewController = outputViewController
+    setUris(outputViewController, data)
+  }
+
+  private fun setUris(outputViewController: OutputViewController, data: Intent) {
+    val clipData = data.clipData!!
+    val clipDataItemCount = clipData.itemCount
+    val uris = ArrayList<Uri>(clipDataItemCount)
+    for (i in 0 until clipDataItemCount) {
+      uris += clipData.getItemAt(i).uri
+    }
+    outputViewController.setSelectedUris(uris)
+  }
+
+  private fun imagePickerIntent(): Intent {
+    val intent = Intent(ACTION_PICK)
+    intent.setDataAndType(EXTERNAL_CONTENT_URI, "image/*")
+    intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+    return intent
   }
 }
