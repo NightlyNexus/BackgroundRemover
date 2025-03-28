@@ -120,11 +120,17 @@ class LauncherActivity : AppCompatActivity() {
   }
 
   private fun setUris(outputViewController: OutputViewController, data: Intent) {
-    val clipData = data.clipData!!
-    val clipDataItemCount = clipData.itemCount
-    val uris = ArrayList<Uri>(clipDataItemCount)
-    for (i in 0 until clipDataItemCount) {
-      uris += clipData.getItemAt(i).uri
+    val singleData = data.data
+    val uris: List<Uri>
+    if (singleData == null) {
+      val clipData = data.clipData!!
+      val clipDataItemCount = clipData.itemCount
+      uris = ArrayList(clipDataItemCount)
+      for (i in 0 until clipDataItemCount) {
+        uris += clipData.getItemAt(i).uri
+      }
+    } else {
+      uris = listOf(singleData)
     }
     outputViewController.setSelectedUris(uris)
   }
