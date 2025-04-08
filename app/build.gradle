@@ -79,6 +79,7 @@ dependencies {
   implementation deps.androidx.lifecycleLivedataCore
   implementation deps.androidx.lifecycleRuntime
   implementation deps.androidx.lifecycleViewmodel
+  implementation deps.androidx.recyclerview
   implementation deps.androidx.savedstate
   implementation deps.kotlin.stdlibJdk8
 

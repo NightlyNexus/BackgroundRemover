@@ -26,7 +26,7 @@ internal class OutputViewController(
   outputSingleImage: ImageView,
   outputSingleFileName: TextView,
   outputSingleSaveLoading: View,
- outputSingleSavedFileName: TextView,
+  outputSingleSavedFileName: TextView,
   saveAllContainer: View,
   private val saveAllButton: TextView,
   private val imageExecutor: Executor,
@@ -343,7 +343,7 @@ internal class OutputViewController(
         val fileNameView = itemView.findViewById<TextView>(R.id.file_name)!!
         val saveButton = itemView.findViewById<View>(R.id.save)!!.apply {
           setOnClickListener {
-            val index = adapterPosition
+            val index = bindingAdapterPosition
             val success = imageResults[index] as ImageResult.ExtractedForeground
             val uri = success.uri
             val fileName = success.fileName
